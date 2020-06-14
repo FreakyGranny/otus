@@ -3,11 +3,8 @@ package hw03_frequency_analysis //nolint:golint
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
-
-// Change to true if needed
-var taskWithAsteriskIsCompleted = false
 
 var text = `Как видите, он  спускается  по  лестнице  вслед  за  своим
 	другом   Кристофером   Робином,   головой   вниз,  пересчитывая
@@ -45,16 +42,35 @@ var text = `Как видите, он  спускается  по  лестни�
 
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
-		assert.Len(t, Top10(""), 0)
+		require.Len(t, Top10(""), 0)
 	})
 
 	t.Run("positive test", func(t *testing.T) {
-		if taskWithAsteriskIsCompleted {
-			expected := []string{"он", "а", "и", "что", "ты", "не", "если", "то", "его", "кристофер", "робин", "в"}
-			assert.Subset(t, expected, Top10(text))
-		} else {
-			expected := []string{"он", "и", "а", "что", "ты", "не", "если", "-", "то", "Кристофер"}
-			assert.ElementsMatch(t, expected, Top10(text))
-		}
+		expected := []string{"он", "а", "и", "что", "ты", "не", "если", "то", "его", "кристофер", "робин", "в"}
+		require.Subset(t, expected, Top10(text))
 	})
+}
+
+func TestParsing(t *testing.T) {
+	tests := []struct {
+		name        string
+		text        string
+		expected    []string
+	}{
+		{"no words", "12", []string{}},
+		{"one word", "Глава  12.", []string{"глава"}},
+		{"capital and lowercase", "Слово    слово", []string{"слово"}},
+		{"dif forms", "Слова слово слов", []string{"слова", "слово", "слов"}},
+		{"punctuation marks", "-слово! \n слово? слово.", []string{"слово"}},
+		{"alone dash", "молчание\t-\tзолото", []string{"молчание", "золото"}},
+		{"word with dash", "что-нибудь", []string{"что-нибудь"}},
+		{"english words", "other language", []string{"other", "language"}},
+		{"smiles", "😼 😺", []string{}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Len(t, Top10(tc.text), len(tc.expected))
+			require.Subset(t, tc.expected, Top10(tc.text))
+		})
+	}
 }
