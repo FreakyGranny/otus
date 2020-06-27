@@ -50,13 +50,41 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c := NewCache(3)
+		c.Set("a", 100)
+		c.Set("b", 200)
+		c.Set("c", 300)
+		c.Set("d", 400)
+		_, ok := c.Get("a")
+		require.False(t, ok)
+	})
+
+	t.Run("lru logic", func(t *testing.T) {
+		c := NewCache(3)
+		c.Set("a", 100)
+		c.Set("b", 200)
+		c.Set("c", 300)
+		_, ok := c.Get("a")
+		require.True(t, ok)
+		ok = c.Set("b", 150)
+		require.True(t, ok)
+		c.Set("d", 400)
+		_, ok = c.Get("c")
+		require.False(t, ok)
+	})
+
+	t.Run("test clear", func(t *testing.T) {
+		c := NewCache(3)
+		c.Set("a", 100)
+		c.Set("b", 200)
+		c.Set("c", 300)
+		c.Clear()
+		_, ok := c.Get("c")
+		require.False(t, ok)
 	})
 }
 
 func TestCacheMultithreading(t *testing.T) {
-	t.Skip() // Remove if task with asterisk completed
-
 	c := NewCache(10)
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
@@ -64,14 +92,14 @@ func TestCacheMultithreading(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 1_000_000; i++ {
-			c.Set(Key(strconv.Itoa(i)), i)
+			c.Set(strconv.Itoa(i), i)
 		}
 	}()
 
 	go func() {
 		defer wg.Done()
 		for i := 0; i < 1_000_000; i++ {
-			c.Get(Key(strconv.Itoa(rand.Intn(1_000_000))))
+			c.Get(strconv.Itoa(rand.Intn(1_000_000)))
 		}
 	}()
 
