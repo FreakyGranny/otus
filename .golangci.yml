@@ -13,4 +13,3 @@ linters:
     - lll
     - nakedret
     - wsl
-    - gofumpt
