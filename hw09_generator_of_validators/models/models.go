@@ -2,7 +2,7 @@ package models
 
 type UserRole string
 
-// NOTE: Several struct specs in one type declaration are allowed.
+//go:generate go-validate $GOFILE
 
 type (
 	User struct {
