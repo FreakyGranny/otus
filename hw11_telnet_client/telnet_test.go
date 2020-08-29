@@ -63,3 +63,14 @@ func TestTelnetClient(t *testing.T) {
 		wg.Wait()
 	})
 }
+
+func TestWrongAddress(t *testing.T) {
+	in := &bytes.Buffer{}
+	out := &bytes.Buffer{}
+
+	timeout, err := time.ParseDuration("1s")
+	require.NoError(t, err)
+
+	client := NewTelnetClient("localhoZt:3333", timeout, ioutil.NopCloser(in), out)
+	require.Error(t, client.Connect())
+}
