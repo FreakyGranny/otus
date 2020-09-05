@@ -3,27 +3,36 @@ package app
 import (
 	"context"
 
-	"github.com/fixme_my_friend/hw12_13_14_15_calendar/internal/storage"
+	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/storage"
 )
 
+// App calendar instance.
 type App struct {
-	// TODO
+	storage Storage
 }
 
-type Logger interface {
-	// TODO
-}
-
+// Storage sql storage.
 type Storage interface {
-	// TODO
+	GetEvent(id int64) (*storage.Event, error)
+	GetEventList() ([]*storage.Event, error)
+	CreateEvent(e *storage.Event) error
+	UpdateEvent(e *storage.Event) error
+	DeleteEvent(id int64) error
+	Close() error
 }
 
-func New(logger Logger, storage Storage) *App {
-	return &App{}
+// New returns new app.
+func New(storage Storage) *App {
+	return &App{
+		storage: storage,
+	}
 }
 
-func (a *App) CreateEvent(ctx context.Context, id string, title string) error {
-	return a.storage.CreateEvent(storage.Event{ID: id, Title: title})
+// CreateEvent creates new calendar event.
+func (a *App) CreateEvent(ctx context.Context, title string) error {
+	return a.storage.CreateEvent(
+		&storage.Event{
+			Title: title,
+		},
+	)
 }
-
-// TODO

@@ -1,0 +1,13 @@
+http:
+    host: "localhost"
+    port: 3333
+logger:
+    level: "info"
+db:
+    type: "memory"
+    user: "cuser"
+    password: ""
+    host: "localhost"
+    port: 5432
+    name: "calendar"
+    sslmode: false

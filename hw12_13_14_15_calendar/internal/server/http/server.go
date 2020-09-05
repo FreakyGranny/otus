@@ -1,26 +1,53 @@
 package internalhttp
 
-import "context"
+import (
+	"context"
+	"io"
+	"net/http"
+)
 
+// Server http server.
 type Server struct {
-	// TODO
+	srv *http.Server
 }
 
+// Application business logic.
 type Application interface {
 	// TODO
 }
 
-func NewServer(app Application) *Server {
-	return &Server{}
+// NewServer returns http server.
+func NewServer(addr string, app Application) *Server {
+	mux := http.NewServeMux()
+	mux.Handle("/healthcheck", loggingMiddleware(http.HandlerFunc(HealthCheck)))
+
+	return &Server{
+		srv: &http.Server{
+			Addr:    addr,
+			Handler: mux,
+		},
+	}
 }
 
+// Start starts http server.
 func (s *Server) Start() error {
-	// TODO
+	if err := s.srv.ListenAndServe(); err != http.ErrServerClosed {
+		return err
+	}
+
+	return nil
 }
 
-func (s *Server) Stop() error {
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	// TODO
+// Stop stops http server.
+func (s *Server) Stop(ctx context.Context) error {
+	if err := s.srv.Shutdown(ctx); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// TODO
+// HealthCheck simple route.
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "OK") //nolint
+}
