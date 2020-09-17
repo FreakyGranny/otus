@@ -27,14 +27,13 @@ func loggingMiddleware(next http.Handler) http.Handler {
 		start := time.Now()
 		lrw := newLoggingResponseWriter(w)
 		next.ServeHTTP(lrw, r)
-		diff := time.Since(start)
 		log.Info().
 			Str("ip", strings.Split(r.RemoteAddr, ":")[0]).
 			Str("method", r.Method).
 			Str("path", r.URL.Path).
 			Str("version", r.Proto).
 			Int("status_code", lrw.statusCode).
-			Str("latency", diff.String()).
+			Str("latency", time.Since(start).String()).
 			Str("agent", r.UserAgent()).
 			Msg("")
 	})

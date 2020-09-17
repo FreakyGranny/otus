@@ -1,33 +1,32 @@
 package main
 
 import (
-	"context"
 	"net"
 	"os"
 	"os/signal"
 	"strconv"
-	"time"
 
 	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/helper"
 	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/logger"
-	internalhttp "github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/server/http"
+	internalgrpc "github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/server/grpc"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
 )
 
-// NewAPICmd return api command.
-func NewAPICmd() *cobra.Command {
+// NewGRPCcmd return grpc command.
+func NewGRPCcmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "api",
-		Short: "run api",
-		Long:  "starts API server",
-		Run:   API,
+		Use:   "grpc",
+		Short: "run grpc",
+		Long:  "starts GRPC server",
+		Run:   GRPC,
 	}
 }
 
-// API starts http API server.
-func API(cmd *cobra.Command, args []string) {
+// GRPC starts http GRPC server.
+func GRPC(cmd *cobra.Command, args []string) {
 	config, err := NewConfig(configFile)
 	if err != nil {
 		log.Fatal().
@@ -53,10 +52,16 @@ func API(cmd *cobra.Command, args []string) {
 	}
 	defer storage.Close()
 
-	server := internalhttp.NewServer(
-		net.JoinHostPort(config.HTTP.Host, strconv.Itoa(config.HTTP.Port)),
-		app.New(storage),
-	)
+	lsn, err := net.Listen("tcp", net.JoinHostPort(config.GRPC.Host, strconv.Itoa(config.GRPC.Port)))
+	if err != nil {
+		log.Error().Err(err).Msg("")
+
+		return
+	}
+
+	server := grpc.NewServer(grpc.UnaryInterceptor(internalgrpc.LoggingInterceptor))
+	service := internalgrpc.New(app.New(storage))
+	internalgrpc.RegisterEventsServer(server, service)
 
 	go func() {
 		signals := make(chan os.Signal, 1)
@@ -65,17 +70,13 @@ func API(cmd *cobra.Command, args []string) {
 		<-signals
 		signal.Stop(signals)
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-
-		if err := server.Stop(ctx); err != nil {
-			log.Err(err).
-				Msg("failed to stop http server")
-		}
+		server.GracefulStop()
 	}()
 
-	if err := server.Start(); err != nil {
-		log.Err(err).
+	log.Info().Msgf("Starting server on %s", lsn.Addr().String())
+
+	if err := server.Serve(lsn); err != nil {
+		log.Error().Err(err).
 			Msg("failed to start http server")
 
 		return

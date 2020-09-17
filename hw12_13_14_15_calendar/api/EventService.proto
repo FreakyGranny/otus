@@ -1,7 +1,87 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
 package event;
 
-message Event {
-    // TODO
+option go_package=".;internalgrpc";
+
+message GetEventRequest {
+    int64 id = 1;
+}
+
+message GetEventResponse {
+    int64 id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start_date = 3;
+    google.protobuf.Timestamp end_date = 4;
+    string descr = 5;
+    int64 owner_id = 6;
+    int64 notify_before = 7;
+}
+
+message ListEventItem {
+    int64 id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start_date = 3;
+    google.protobuf.Timestamp end_date = 4;
+    string descr = 5;
+    int64 owner_id = 6;
+    int64 notify_before = 7;
+}
+
+message ListEventResponse {
+    repeated ListEventItem results = 1;
+}
+
+message CreateEventRequest {
+    string title = 2;
+    google.protobuf.Timestamp start_date = 3;
+    google.protobuf.Timestamp end_date = 4;
+    string descr = 5;
+    int64 owner_id = 6;
+    int64 notify_before = 7;
+}
+
+message CreateEventResponse {
+    int64 id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start_date = 3;
+    google.protobuf.Timestamp end_date = 4;
+    string descr = 5;
+    int64 owner_id = 6;
+    int64 notify_before = 7;
+}
+
+message UpdateEventRequest {
+    int64 id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start_date = 3;
+    google.protobuf.Timestamp end_date = 4;
+    string descr = 5;
+    int64 owner_id = 6;
+    int64 notify_before = 7;
+}
+
+message UpdateEventResponse {
+    int64 id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start_date = 3;
+    google.protobuf.Timestamp end_date = 4;
+    string descr = 5;
+    int64 owner_id = 6;
+    int64 notify_before = 7;
+}
+
+message DeleteEventRequest {
+    int64 id = 1;
+}
+
+service Events {
+    rpc GetEvent(GetEventRequest) returns (GetEventResponse) {}
+    rpc GetEventList(google.protobuf.Empty) returns (ListEventResponse) {}
+    rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {}
+    rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse) {}
+    rpc DeleteEvent(DeleteEventRequest) returns (google.protobuf.Empty) {}
 }

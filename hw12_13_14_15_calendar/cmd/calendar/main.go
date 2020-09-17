@@ -12,7 +12,7 @@ func main() {
 	rootCmd := &cobra.Command{Use: "calendar"}
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "/etc/calendar/config.yaml", "Path to configuration file")
 
-	rootCmd.AddCommand(NewAPICmd(), NewMigrateCmd())
+	rootCmd.AddCommand(NewAPICmd(), NewGRPCcmd(), NewMigrateCmd())
 	if rootCmd.Execute() != nil {
 		os.Exit(1)
 	}

@@ -1,13 +1,17 @@
 package memorystorage
 
 import (
+	"context"
 	"errors"
 	"sync"
 
 	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/storage"
 )
 
-var errEventNotFound = errors.New("event not found")
+var (
+	errEventNotFound   = errors.New("event not found")
+	errContextCanceled = errors.New("context canceled")
+)
 
 // Storage memory storage.
 type Storage struct {
@@ -29,59 +33,84 @@ func (s *Storage) Close() error {
 }
 
 // CreateEvent creates new event.
-func (s *Storage) CreateEvent(e *storage.Event) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.seq++
-	e.ID = s.seq
-	s.values[e.ID] = *e
+func (s *Storage) CreateEvent(ctx context.Context, e *storage.Event) error {
+	select {
+	case <-ctx.Done():
+		return errContextCanceled
+	default:
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		s.seq++
+		e.ID = s.seq
+		s.values[e.ID] = *e
 
-	return nil
+		return nil
+	}
 }
 
 // GetEvent returns event by id.
-func (s *Storage) GetEvent(id int64) (*storage.Event, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	e, ok := s.values[id]
-	if !ok {
-		return nil, errEventNotFound
-	}
+func (s *Storage) GetEvent(ctx context.Context, id int64) (*storage.Event, error) {
+	select {
+	case <-ctx.Done():
+		return nil, errContextCanceled
+	default:
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+		e, ok := s.values[id]
+		if !ok {
+			return nil, errEventNotFound
+		}
 
-	return &e, nil
+		return &e, nil
+	}
 }
 
 // GetEventList returns list of events.
-func (s *Storage) GetEventList() ([]*storage.Event, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+func (s *Storage) GetEventList(ctx context.Context) ([]*storage.Event, error) {
 	result := make([]*storage.Event, 0)
-	for _, e := range s.values {
-		x := e
-		result = append(result, &x)
-	}
+	select {
+	case <-ctx.Done():
+		return result, errContextCanceled
+	default:
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+		for _, e := range s.values {
+			x := e
+			result = append(result, &x)
+		}
 
-	return result, nil
+		return result, nil
+	}
 }
 
 // UpdateEvent updates event.
-func (s *Storage) UpdateEvent(e *storage.Event) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	_, ok := s.values[e.ID]
-	if !ok {
-		return errEventNotFound
-	}
-	s.values[e.ID] = *e
+func (s *Storage) UpdateEvent(ctx context.Context, e *storage.Event) error {
+	select {
+	case <-ctx.Done():
+		return errContextCanceled
+	default:
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		_, ok := s.values[e.ID]
+		if !ok {
+			return errEventNotFound
+		}
+		s.values[e.ID] = *e
 
-	return nil
+		return nil
+	}
 }
 
 // DeleteEvent deletes event.
-func (s *Storage) DeleteEvent(id int64) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	delete(s.values, id)
+func (s *Storage) DeleteEvent(ctx context.Context, id int64) error {
+	select {
+	case <-ctx.Done():
+		return errContextCanceled
+	default:
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		delete(s.values, id)
 
-	return nil
+		return nil
+	}
 }

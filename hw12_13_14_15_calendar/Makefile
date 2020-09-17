@@ -1,3 +1,6 @@
+generate:
+	go generate ./...
+
 build:
 	go build -o ./bin/calendar ./cmd/calendar
 
@@ -10,4 +13,4 @@ install-lint-deps:
 lint: install-lint-deps
 	golangci-lint run ./...
 
-.PHONY: build test lint
+.PHONY: build test lint generate

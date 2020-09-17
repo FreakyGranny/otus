@@ -1,6 +1,9 @@
 http:
     host: "localhost"
     port: 3333
+grpc:
+    host: "localhost"
+    port: 50051
 logger:
     level: "info"
 db:

@@ -1,6 +1,7 @@
 package memorystorage
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -9,12 +10,13 @@ import (
 )
 
 func TestStorage(t *testing.T) {
+	ctx := context.Background()
 	t.Run("create", func(t *testing.T) {
 		s := New()
 		e := &storage.Event{
 			Title: "test",
 		}
-		err := s.CreateEvent(e)
+		err := s.CreateEvent(ctx, e)
 		require.NoError(t, err)
 		require.NotEqual(t, 0, e.ID)
 	})
@@ -23,18 +25,18 @@ func TestStorage(t *testing.T) {
 		e := &storage.Event{
 			Title: "test",
 		}
-		err := s.CreateEvent(e)
+		err := s.CreateEvent(ctx, e)
 		require.NoError(t, err)
 		require.NotEqual(t, 0, e.ID)
 
-		res, err := s.GetEvent(e.ID)
+		res, err := s.GetEvent(ctx, e.ID)
 		require.NoError(t, err)
 		require.Equal(t, e.ID, res.ID)
 	})
 	t.Run("get not found", func(t *testing.T) {
 		s := New()
 
-		res, err := s.GetEvent(65635)
+		res, err := s.GetEvent(ctx, 65635)
 		require.Error(t, err)
 		require.Nil(t, res)
 	})
@@ -43,11 +45,11 @@ func TestStorage(t *testing.T) {
 		e := &storage.Event{
 			Title: "test",
 		}
-		err := s.CreateEvent(e)
+		err := s.CreateEvent(ctx, e)
 		require.NoError(t, err)
 		require.NotEqual(t, 0, e.ID)
 
-		err = s.DeleteEvent(e.ID)
+		err = s.DeleteEvent(ctx, e.ID)
 		require.NoError(t, err)
 	})
 	t.Run("update", func(t *testing.T) {
@@ -55,18 +57,18 @@ func TestStorage(t *testing.T) {
 		e := &storage.Event{
 			Title: "test",
 		}
-		err := s.CreateEvent(e)
+		err := s.CreateEvent(ctx, e)
 		require.NoError(t, err)
 		require.NotEqual(t, 0, e.ID)
 
 		nEvent := &storage.Event{
-			ID: e.ID,
+			ID:    e.ID,
 			Title: "updated",
 		}
-		err = s.UpdateEvent(nEvent)
+		err = s.UpdateEvent(ctx, nEvent)
 		require.NoError(t, err)
 
-		res, err := s.GetEvent(nEvent.ID)
+		res, err := s.GetEvent(ctx, nEvent.ID)
 		require.NoError(t, err)
 		require.Equal(t, nEvent.Title, res.Title)
 	})
@@ -79,12 +81,12 @@ func TestStorage(t *testing.T) {
 			Title: "test2",
 		}
 
-		err := s.CreateEvent(fe)
+		err := s.CreateEvent(ctx, fe)
 		require.NoError(t, err)
-		err = s.CreateEvent(se)
+		err = s.CreateEvent(ctx, se)
 		require.NoError(t, err)
 
-		res, err := s.GetEventList()
+		res, err := s.GetEventList(ctx)
 		require.NoError(t, err)
 		require.Equal(t, 2, len(res))
 		require.Equal(t, res, []*storage.Event{fe, se})

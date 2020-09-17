@@ -3,8 +3,8 @@ package main
 import (
 	"database/sql"
 
+	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/helper"
 	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/logger"
-	sqlstorage "github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/storage/sql"
 	_ "github.com/FreakyGranny/otus/hw12_13_14_15_calendar/migrations"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/pressly/goose"
@@ -46,7 +46,7 @@ func Migrate(cmd *cobra.Command, args []string) {
 			Msg("Migrations supported only postgress")
 	}
 
-	dsn := sqlstorage.BuildDsn(
+	dsn := helper.BuildDsn(
 		config.DB.Host,
 		config.DB.Port,
 		config.DB.User,
@@ -66,6 +66,6 @@ func Migrate(cmd *cobra.Command, args []string) {
 	defer db.Close()
 
 	if err := goose.Run(args[0], db, "./"); err != nil {
-		log.Fatal().Err(err).Msg("goose run")
+		log.Error().Err(err).Msg("goose run")
 	}
 }

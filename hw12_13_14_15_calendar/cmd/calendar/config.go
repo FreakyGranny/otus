@@ -14,6 +14,10 @@ type Config struct {
 		Host string `config:"http-host,required"`
 		Port int    `config:"http-port,required"`
 	}
+	GRPC struct {
+		Host string `config:"grpc-host,required"`
+		Port int    `config:"grpc-port,required"`
+	}
 	Logger struct {
 		Level string `config:"logger-level,required"`
 	}
