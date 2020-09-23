@@ -16,6 +16,7 @@ func SendWorker(ctx context.Context, wg *sync.WaitGroup, ch <-chan amqp.Delivery
 	defer wg.Done()
 	notification := &queue.Notification{}
 
+	log.Info().Msg("send worker started...")
 	for {
 		select {
 		case <-ctx.Done():

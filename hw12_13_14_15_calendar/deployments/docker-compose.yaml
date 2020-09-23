@@ -1,19 +1,66 @@
 version: "3"
 services:
-    db:
-      image: postgres:12-alpine
-      environment:
-        - POSTGRES_PASSWORD=postgres
-        - POSTGRES_USER=postgres
-      volumes:
-       - ./db-init.sh:/docker-entrypoint-initdb.d/init.sh
-      ports:
-        - "5432:5432"
-    rmq:
-      image: rabbitmq:3-management
-      environment:
-        - RABBITMQ_DEFAULT_USER=user
-        - RABBITMQ_DEFAULT_PASS=password
-      ports:
-        - "5672:5672"
-        - "15672:15672"
+  db:
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+    volumes:
+      - ./db-init.sh:/docker-entrypoint-initdb.d/init.sh
+  rmq:
+    image: rabbitmq:3
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+  migrate:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: sh -c "/wait && /app/calendar migrate up --config config.yaml"
+    environment:
+      - WAIT_HOSTS=db:5432
+      - WAIT_BEFORE_HOSTS=1
+      - DB_TYPE=postgres
+      - DB_PASSWORD=qwerty123
+      - DB_HOST=db
+    depends_on: [db]
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: sh -c "/wait && /app/calendar api --config config.yaml"
+    environment:
+      - WAIT_HOSTS=db:5432
+      - WAIT_BEFORE_HOSTS=2
+      - DB_TYPE=postgres
+      - DB_PASSWORD=qwerty123
+      - DB_HOST=db
+      - HTTP_HOST=0.0.0.0
+    depends_on: [db]
+    ports:
+      - "8888:3333"
+  scheduler:
+    build:
+      context: ..
+      dockerfile: Dockerfile.scheduler
+    command: sh -c "/wait && /app/calendar_scheduler --config config.yaml"
+    environment:
+      - WAIT_HOSTS=db:5432,rmq:5672
+      - WAIT_BEFORE_HOSTS=3
+      - DB_TYPE=postgres
+      - DB_PASSWORD=qwerty123
+      - DB_HOST=db
+      - RMQ_PASSWORD=password
+      - RMQ_HOST=rmq
+    depends_on: [db, rmq]
+  sender:
+    build:
+      context: ..
+      dockerfile: Dockerfile.sender
+    command: sh -c "/wait && /app/calendar_sender --config config.yaml"
+    environment:
+      - WAIT_HOSTS=rmq:5672
+      - WAIT_BEFORE_HOSTS=10
+      - RMQ_PASSWORD=password
+      - RMQ_HOST=rmq
+    depends_on: [rmq]

@@ -36,6 +36,8 @@ func (a *SchedulerApp) Watch(ctx context.Context) error {
 	if err = a.prod.Start(); err != nil {
 		return err
 	}
+	log.Info().Msg("scheduler started...")
+
 	ticker := time.NewTicker(a.interval)
 	defer ticker.Stop()
 
@@ -46,7 +48,7 @@ func (a *SchedulerApp) Watch(ctx context.Context) error {
 	for {
 		select {
 		case <-ticker.C:
-			log.Info().
+			log.Debug().
 				Msg("check events for notification")
 			events, err := a.storage.GetEventForNotification(ctx, a.interval)
 			if err != nil {

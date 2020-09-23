@@ -20,7 +20,7 @@ func Up001(tx *sql.Tx) error {
 			end_date timestamp NOT NULL,
 			descr varchar,
 			owner_id int NOT NULL,
-			notify_before NOT NULL DEFAULT 0);
+			notify_before int NOT NULL DEFAULT 0);
 	`)
 	if err != nil {
 		return err
