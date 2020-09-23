@@ -3,6 +3,8 @@ generate:
 
 build:
 	go build -o ./bin/calendar ./cmd/calendar
+	go build -o ./bin/calendar_scheduler ./cmd/calendar_scheduler
+	go build -o ./bin/calendar_sender ./cmd/calendar_sender
 
 test:
 	go test -race ./internal/... ./pkg/...

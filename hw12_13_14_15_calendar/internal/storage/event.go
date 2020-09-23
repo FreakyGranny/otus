@@ -15,6 +15,8 @@ type Storage interface {
 	UpdateEvent(ctx context.Context, e *Event) error
 	DeleteEvent(ctx context.Context, id int64) error
 	Close() error
+	DeleteOldEvents(ctx context.Context, d int) error
+	GetEventForNotification(ctx context.Context, i time.Duration) ([]*Event, error)
 }
 
 // Event calendar event.

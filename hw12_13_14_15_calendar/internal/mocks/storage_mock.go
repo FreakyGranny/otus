@@ -9,6 +9,7 @@ import (
 	storage "github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/storage"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+	time "time"
 )
 
 // MockStorage is a mock of Storage interface
@@ -118,4 +119,33 @@ func (m *MockStorage) Close() error {
 func (mr *MockStorageMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockStorage)(nil).Close))
+}
+
+// DeleteOldEvents mocks base method
+func (m *MockStorage) DeleteOldEvents(ctx context.Context, d int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOldEvents", ctx, d)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOldEvents indicates an expected call of DeleteOldEvents
+func (mr *MockStorageMockRecorder) DeleteOldEvents(ctx, d interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOldEvents", reflect.TypeOf((*MockStorage)(nil).DeleteOldEvents), ctx, d)
+}
+
+// GetEventForNotification mocks base method
+func (m *MockStorage) GetEventForNotification(ctx context.Context, i time.Duration) ([]*storage.Event, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEventForNotification", ctx, i)
+	ret0, _ := ret[0].([]*storage.Event)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEventForNotification indicates an expected call of GetEventForNotification
+func (mr *MockStorageMockRecorder) GetEventForNotification(ctx, i interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventForNotification", reflect.TypeOf((*MockStorage)(nil).GetEventForNotification), ctx, i)
 }

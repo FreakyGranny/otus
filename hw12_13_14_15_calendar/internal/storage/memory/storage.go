@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/storage"
 )
@@ -113,4 +114,14 @@ func (s *Storage) DeleteEvent(ctx context.Context, id int64) error {
 
 		return nil
 	}
+}
+
+// DeleteOldEvents deletes events older then given delta.
+func (s *Storage) DeleteOldEvents(ctx context.Context, d int) error {
+	return nil
+}
+
+// GetEventForNotification returns list of events.
+func (s *Storage) GetEventForNotification(ctx context.Context, i time.Duration) ([]*storage.Event, error) {
+	return make([]*storage.Event, 0), nil
 }

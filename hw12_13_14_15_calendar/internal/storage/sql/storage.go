@@ -128,3 +128,34 @@ func (s *Storage) DeleteEvent(ctx context.Context, id int64) error {
 
 	return err
 }
+
+// DeleteOldEvents deletes events older then given delta.
+func (s *Storage) DeleteOldEvents(ctx context.Context, d int) error {
+	_, err := s.db.ExecContext(ctx, `DELETE FROM events WHERE start_date + make_interval(days => $1) < now()`, d)
+
+	return err
+}
+
+// GetEventForNotification returns list of events.
+func (s *Storage) GetEventForNotification(ctx context.Context, i time.Duration) ([]*storage.Event, error) {
+	res := make([]*storage.Event, 0)
+	query := `SELECT id, owner_id, title, descr, start_date, end_date, notify_before FROM events
+					WHERE notify_before > 0 
+					AND (start_date - make_interval(secs => notify_before)) 
+					BETWEEN now() AND now() + make_interval(secs => $1)`
+	rows, err := s.db.QueryxContext(ctx, query, i.Seconds())
+	if err != nil {
+		return res, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var e storage.Event
+		if err := rows.StructScan(&e); err != nil {
+			return res, err
+		}
+		res = append(res, &e)
+	}
+
+	return res, err
+}

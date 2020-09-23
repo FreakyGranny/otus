@@ -53,3 +53,14 @@ func CreateStorage(dbType string, host string, port int, user string, password s
 		return nil, errors.New("unsupported storage type")
 	}
 }
+
+// BuildRmqAddr build rmq addr string from params.
+func BuildRmqAddr(host string, port int, user string, password string) string {
+	u := &url.URL{
+		Scheme: "amqp",
+		User:   url.UserPassword(user, password),
+		Host:   net.JoinHostPort(host, strconv.Itoa(port)),
+	}
+
+	return u.String()
+}

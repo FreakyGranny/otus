@@ -1,0 +1,11 @@
+logger:
+    level: "info"
+rmq:
+    host: "localhost"
+    port: 5672
+    user: "user"
+    password: ""
+    queue: "myQueue"
+    tag: "test-tag"
+sender:
+    threads: 2
