@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  integration-tests:
+    image: calendar_i_tests:1
+    build:
+      context: ..
+      dockerfile: Dockerfile.integration
+    environment:
+      - GRPC_URL=grpc:50051

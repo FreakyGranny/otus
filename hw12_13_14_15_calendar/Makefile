@@ -21,4 +21,7 @@ up: build
 down:
 	docker-compose -f deployments/docker-compose.yaml -p calendar down
 
-.PHONY: build test lint generate up down
+integration-tests: build
+	./scripts/run_integration_test.sh
+
+.PHONY: build test lint generate up down integration-tests

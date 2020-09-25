@@ -13,6 +13,7 @@ services:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password
   migrate:
+    image: calendar:1
     build:
       context: ..
       dockerfile: Dockerfile
@@ -25,6 +26,7 @@ services:
       - DB_HOST=db
     depends_on: [db]
   api:
+    image: calendar:1
     build:
       context: ..
       dockerfile: Dockerfile
@@ -39,7 +41,22 @@ services:
     depends_on: [db]
     ports:
       - "8888:3333"
+  grpc:
+    image: calendar:1
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: sh -c "/wait && /app/calendar grpc --config config.yaml"
+    environment:
+      - WAIT_HOSTS=db:5432
+      - WAIT_BEFORE_HOSTS=2
+      - DB_TYPE=postgres
+      - DB_PASSWORD=qwerty123
+      - DB_HOST=db
+      - GRPC_HOST=0.0.0.0
+    depends_on: [db]
   scheduler:
+    image: calendar_scheduler:1
     build:
       context: ..
       dockerfile: Dockerfile.scheduler
@@ -54,13 +71,14 @@ services:
       - RMQ_HOST=rmq
     depends_on: [db, rmq]
   sender:
+    image: calendar_sender:1
     build:
       context: ..
       dockerfile: Dockerfile.sender
     command: sh -c "/wait && /app/calendar_sender --config config.yaml"
     environment:
       - WAIT_HOSTS=rmq:5672
-      - WAIT_BEFORE_HOSTS=10
+      - WAIT_BEFORE_HOSTS=3
       - RMQ_PASSWORD=password
       - RMQ_HOST=rmq
     depends_on: [rmq]

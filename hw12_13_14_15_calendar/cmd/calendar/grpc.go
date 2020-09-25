@@ -77,7 +77,7 @@ func GRPC(cmd *cobra.Command, args []string) {
 
 	if err := server.Serve(lsn); err != nil {
 		log.Error().Err(err).
-			Msg("failed to start http server")
+			Msg("failed to start grpc server")
 
 		return
 	}
