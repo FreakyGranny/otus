@@ -58,20 +58,21 @@ func (s *EventHandlerSuite) TestGetEvent() {
 func (s *EventHandlerSuite) TestGetEventList() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	req := httptest.NewRequest(http.MethodGet, "/event", bytes.NewBuffer(nil))
+	req := httptest.NewRequest(http.MethodGet, "/event?date=2020-09-26&period=d", bytes.NewBuffer(nil))
 	req.Header.Set("Content-type", "application/json")
-
 	e := []*storage.Event{
 		{
 			ID:    1,
-			Title: "test event",	
+			Title: "test event",
 		},
 		{
 			ID:    2,
-			Title: "second event",	
+			Title: "second event",
 		},
 	}
-	s.mockStorage.EXPECT().GetEventList(ctx).Return(e, nil)
+	date := time.Date(2020, 9, 26, 0, 0, 0, 0, time.UTC)
+
+	s.mockStorage.EXPECT().GetEventList(ctx, date, time.Hour*24).Return(e, nil)
 
 	rec := httptest.NewRecorder()
 	h := NewEventHandler(app.New(s.mockStorage))

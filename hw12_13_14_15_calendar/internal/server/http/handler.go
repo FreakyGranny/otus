@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -14,6 +15,8 @@ import (
 )
 
 const timeout = time.Second
+
+var errWrongPeriod = errors.New("wrong period")
 
 func getPathAndID(urlPath string) (string, int) {
 	var path string
@@ -103,12 +106,38 @@ func (h *EventHandler) GetEvent(ctx context.Context, w http.ResponseWriter, r *h
 
 // GetEventList returns list of events.
 func (h *EventHandler) GetEventList(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	e, err := h.app.GetEventList(ctx)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	var rawDate string
+	var rawPeriod string
+	for qName, qVal := range r.URL.Query() {
+		if qName == "date" {
+			rawDate = qVal[0]
+		}
+		if qName == "period" {
+			rawPeriod = qVal[0]
+		}
+	}
 
+	if len(rawDate) == 0 || len(rawPeriod) == 0 {
+		http.Error(w, "required query params missed", http.StatusBadRequest)
 		return
 	}
+
+	date, err := time.Parse("2006-01-02", rawDate)
+	if err != nil {
+		http.Error(w, "date wrong format. required [2006-01-02]", http.StatusBadRequest)
+	}
+
+	e, err := h.getList(ctx, date, rawPeriod)
+	switch err {
+	case nil:
+	case errWrongPeriod:
+		http.Error(w, "wrong period. allowed d/w/m", http.StatusBadRequest)
+		return
+	default:
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	js, err := json.Marshal(e)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -117,6 +146,19 @@ func (h *EventHandler) GetEventList(ctx context.Context, w http.ResponseWriter, 
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js) //nolint
+}
+
+func (h *EventHandler) getList(ctx context.Context, date time.Time, period string) ([]*storage.Event, error) {
+	switch period {
+	case "d":
+		return h.app.GetEventForDay(ctx, date)
+	case "w":
+		return h.app.GetEventForWeek(ctx, date)
+	case "m":
+		return h.app.GetEventForMonth(ctx, date)
+	default:
+		return nil, errWrongPeriod
+	}
 }
 
 // CreateEvent creates new event.

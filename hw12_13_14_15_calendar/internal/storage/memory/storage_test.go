@@ -3,6 +3,7 @@ package memorystorage
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -76,9 +77,11 @@ func TestStorage(t *testing.T) {
 		s := New()
 		fe := &storage.Event{
 			Title: "test1",
+			StartDate: time.Now().Add(time.Minute),
 		}
 		se := &storage.Event{
 			Title: "test2",
+			StartDate: time.Now().Add(time.Hour),
 		}
 
 		err := s.CreateEvent(ctx, fe)
@@ -86,7 +89,7 @@ func TestStorage(t *testing.T) {
 		err = s.CreateEvent(ctx, se)
 		require.NoError(t, err)
 
-		res, err := s.GetEventList(ctx)
+		res, err := s.GetEventList(ctx, time.Now(), time.Hour * 24)
 		require.NoError(t, err)
 		require.Equal(t, 2, len(res))
 		require.Equal(t, res, []*storage.Event{fe, se})

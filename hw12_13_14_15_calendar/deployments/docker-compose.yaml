@@ -7,6 +7,8 @@ services:
       - POSTGRES_USER=postgres
     volumes:
       - ./db-init.sh:/docker-entrypoint-initdb.d/init.sh
+    ports:
+      - "5432:5432"  
   rmq:
     image: rabbitmq:3
     environment:
@@ -55,6 +57,8 @@ services:
       - DB_HOST=db
       - GRPC_HOST=0.0.0.0
     depends_on: [db]
+    ports:
+      - "50051:50051"
   scheduler:
     image: calendar_scheduler:1
     build:

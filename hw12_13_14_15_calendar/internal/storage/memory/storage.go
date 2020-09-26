@@ -67,7 +67,7 @@ func (s *Storage) GetEvent(ctx context.Context, id int64) (*storage.Event, error
 }
 
 // GetEventList returns list of events.
-func (s *Storage) GetEventList(ctx context.Context) ([]*storage.Event, error) {
+func (s *Storage) GetEventList(ctx context.Context, date time.Time, period time.Duration) ([]*storage.Event, error) {
 	result := make([]*storage.Event, 0)
 	select {
 	case <-ctx.Done():
@@ -77,7 +77,9 @@ func (s *Storage) GetEventList(ctx context.Context) ([]*storage.Event, error) {
 		defer s.mu.RUnlock()
 		for _, e := range s.values {
 			x := e
-			result = append(result, &x)
+			if e.StartDate.After(date) && e.StartDate.Before(date.Add(period)) {
+				result = append(result, &x)
+			}
 		}
 
 		return result, nil

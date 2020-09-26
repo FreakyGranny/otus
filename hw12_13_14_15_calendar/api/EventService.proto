@@ -21,6 +21,10 @@ message GetEventResponse {
     int64 notify_before = 7;
 }
 
+message ListEventRequest {
+    google.protobuf.Timestamp date = 1;
+}
+
 message ListEventItem {
     int64 id = 1;
     string title = 2;
@@ -80,7 +84,9 @@ message DeleteEventRequest {
 
 service Events {
     rpc GetEvent(GetEventRequest) returns (GetEventResponse) {}
-    rpc GetEventList(google.protobuf.Empty) returns (ListEventResponse) {}
+    rpc GetEventForDay(ListEventRequest) returns (ListEventResponse) {}
+    rpc GetEventForWeek(ListEventRequest) returns (ListEventResponse) {}
+    rpc GetEventForMonth(ListEventRequest) returns (ListEventResponse) {}
     rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {}
     rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse) {}
     rpc DeleteEvent(DeleteEventRequest) returns (google.protobuf.Empty) {}

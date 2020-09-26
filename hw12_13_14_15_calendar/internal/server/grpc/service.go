@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/app"
+	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/storage"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	codes "google.golang.org/grpc/codes"
@@ -55,14 +56,39 @@ func (s *Service) GetEvent(ctx context.Context, req *GetEventRequest) (*GetEvent
 	}, nil
 }
 
-// GetEventList returns list of events.
-func (s *Service) GetEventList(ctx context.Context, _ *empty.Empty) (*ListEventResponse, error) {
-	eList, err := s.app.GetEventList(ctx)
+// GetEventForDay returns list of events for day.
+func (s *Service) GetEventForDay(ctx context.Context, req *ListEventRequest) (*ListEventResponse, error) {
+	eList, err := s.app.GetEventForDay(ctx, req.GetDate().AsTime())
 	if err != nil {
 		return nil, status.Error(codes.Internal, "unable to get events")
 	}
-	res := make([]*ListEventItem, 0, len(eList))
-	for _, e := range eList {
+
+	return toProto(eList)
+}
+
+// GetEventForWeek returns list of events for week.
+func (s *Service) GetEventForWeek(ctx context.Context, req *ListEventRequest) (*ListEventResponse, error) {
+	eList, err := s.app.GetEventForWeek(ctx, req.GetDate().AsTime())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "unable to get events")
+	}
+
+	return toProto(eList)
+}
+
+// GetEventForMonth returns list of events for month.
+func (s *Service) GetEventForMonth(ctx context.Context, req *ListEventRequest) (*ListEventResponse, error) {
+	eList, err := s.app.GetEventForMonth(ctx, req.GetDate().AsTime())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "unable to get events")
+	}
+
+	return toProto(eList)
+}
+
+func toProto(events []*storage.Event) (*ListEventResponse, error) {
+	res := make([]*ListEventItem, 0, len(events))
+	for _, e := range events {
 		sd, err := ptypes.TimestampProto(e.StartDate)
 		if err != nil {
 			return nil, status.Error(codes.Internal, "unable to convert event")

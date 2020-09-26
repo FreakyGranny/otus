@@ -10,7 +10,7 @@ import (
 // Storage storage provider.
 type Storage interface {
 	GetEvent(ctx context.Context, id int64) (*Event, error)
-	GetEventList(ctx context.Context) ([]*Event, error)
+	GetEventList(ctx context.Context, date time.Time, period time.Duration) ([]*Event, error)
 	CreateEvent(ctx context.Context, e *Event) error
 	UpdateEvent(ctx context.Context, e *Event) error
 	DeleteEvent(ctx context.Context, id int64) error

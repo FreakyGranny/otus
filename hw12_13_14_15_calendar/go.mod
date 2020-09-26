@@ -3,6 +3,7 @@ module github.com/FreakyGranny/otus/hw12_13_14_15_calendar
 go 1.14
 
 require (
+	github.com/bxcodec/faker/v3 v3.5.0
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.1
