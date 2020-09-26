@@ -8,14 +8,15 @@ services:
     volumes:
       - ./db-init.sh:/docker-entrypoint-initdb.d/init.sh
     ports:
-      - "5432:5432"  
+      - "5432:5432"
+
   rmq:
     image: rabbitmq:3
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password
+
   migrate:
-    image: calendar:1
     build:
       context: ..
       dockerfile: Dockerfile
@@ -27,8 +28,8 @@ services:
       - DB_PASSWORD=qwerty123
       - DB_HOST=db
     depends_on: [db]
+
   api:
-    image: calendar:1
     build:
       context: ..
       dockerfile: Dockerfile
@@ -43,8 +44,8 @@ services:
     depends_on: [db]
     ports:
       - "8888:3333"
+
   grpc:
-    image: calendar:1
     build:
       context: ..
       dockerfile: Dockerfile
@@ -59,8 +60,8 @@ services:
     depends_on: [db]
     ports:
       - "50051:50051"
+
   scheduler:
-    image: calendar_scheduler:1
     build:
       context: ..
       dockerfile: Dockerfile.scheduler
@@ -74,8 +75,8 @@ services:
       - RMQ_PASSWORD=password
       - RMQ_HOST=rmq
     depends_on: [db, rmq]
+
   sender:
-    image: calendar_sender:1
     build:
       context: ..
       dockerfile: Dockerfile.sender

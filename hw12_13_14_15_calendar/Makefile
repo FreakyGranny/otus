@@ -15,13 +15,13 @@ install-lint-deps:
 lint: install-lint-deps
 	golangci-lint run ./...
 
-up: build
+up:
 	docker-compose -f deployments/docker-compose.yaml -p calendar up
 
 down:
-	docker-compose -f deployments/docker-compose.yaml -p calendar down
+	docker-compose -f deployments/docker-compose.yaml -p calendar down --rmi local
 
-integration-tests: build
+integration-tests:
 	./scripts/run_integration_test.sh
 
 .PHONY: build test lint generate up down integration-tests
