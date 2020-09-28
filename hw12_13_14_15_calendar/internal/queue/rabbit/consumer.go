@@ -98,6 +98,17 @@ func (c *Consumer) announceQueue() (<-chan amqp.Delivery, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error setting qos: %s", err)
 	}
+	_, err = c.channel.QueueDeclare(
+		c.queue,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("declare queue: %s", err)
+	}
 	msgs, err := c.channel.Consume(
 		c.queue,
 		c.consumerTag,

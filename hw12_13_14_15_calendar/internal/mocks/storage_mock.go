@@ -51,18 +51,18 @@ func (mr *MockStorageMockRecorder) GetEvent(ctx, id interface{}) *gomock.Call {
 }
 
 // GetEventList mocks base method
-func (m *MockStorage) GetEventList(ctx context.Context) ([]*storage.Event, error) {
+func (m *MockStorage) GetEventList(ctx context.Context, date time.Time, period time.Duration) ([]*storage.Event, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEventList", ctx)
+	ret := m.ctrl.Call(m, "GetEventList", ctx, date, period)
 	ret0, _ := ret[0].([]*storage.Event)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEventList indicates an expected call of GetEventList
-func (mr *MockStorageMockRecorder) GetEventList(ctx interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) GetEventList(ctx, date, period interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventList", reflect.TypeOf((*MockStorage)(nil).GetEventList), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventList", reflect.TypeOf((*MockStorage)(nil).GetEventList), ctx, date, period)
 }
 
 // CreateEvent mocks base method

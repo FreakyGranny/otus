@@ -61,9 +61,13 @@ func (s *Storage) GetEvent(ctx context.Context, id int64) (*storage.Event, error
 }
 
 // GetEventList returns list of events.
-func (s *Storage) GetEventList(ctx context.Context) ([]*storage.Event, error) {
+func (s *Storage) GetEventList(ctx context.Context, date time.Time, period time.Duration) ([]*storage.Event, error) {
 	res := make([]*storage.Event, 0)
-	rows, err := s.db.QueryxContext(ctx, "SELECT id, owner_id, title, descr, start_date, end_date, notify_before FROM events")
+	query := `SELECT id, owner_id, title, descr, start_date, end_date, notify_before FROM events
+					WHERE start_date
+					BETWEEN $1 AND $1 + make_interval(hours => $2)
+	`
+	rows, err := s.db.QueryxContext(ctx, query, date, int(period.Hours()))
 	if err != nil {
 		return res, err
 	}

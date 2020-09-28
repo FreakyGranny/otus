@@ -8,16 +8,23 @@ import (
 	"github.com/FreakyGranny/otus/hw12_13_14_15_calendar/internal/storage"
 )
 
-// ErrEventFieldWrong required params are wrong.
-var ErrEventFieldWrong = errors.New("some fields are wrong")
-
-// ErrEventIDZero id must be non zero value.
-var ErrEventIDZero = errors.New("id must be positive")
+var (
+	// ErrEventFieldWrong required params are wrong.
+	ErrEventFieldWrong = errors.New("some fields are wrong")
+	// ErrEventIDZero id must be non zero value.
+	ErrEventIDZero = errors.New("id must be positive")
+	// ErrDateIsNotMonday date is not start of week.
+	ErrDateIsNotMonday = errors.New("date is not monday")
+	// ErrDateIsNotFirstDay date is not start of month.
+	ErrDateIsNotFirstDay = errors.New("date is not first day of month")
+)
 
 // Application business logic.
 type Application interface {
 	GetEvent(ctx context.Context, id int64) (*storage.Event, error)
-	GetEventList(ctx context.Context) ([]*storage.Event, error)
+	GetEventForDay(ctx context.Context, date time.Time) ([]*storage.Event, error)
+	GetEventForWeek(ctx context.Context, date time.Time) ([]*storage.Event, error)
+	GetEventForMonth(ctx context.Context, date time.Time) ([]*storage.Event, error)
 	CreateEvent(ctx context.Context, title string, startDate time.Time, endDate time.Time, ownerID int64, descr string, notifyBefore int64) (*storage.Event, error)
 	UpdateEvent(ctx context.Context, id int64, title string, startDate time.Time, endDate time.Time, ownerID int64, descr string, notifyBefore int64) (*storage.Event, error)
 	DeleteEvent(ctx context.Context, id int64) error
@@ -44,9 +51,35 @@ func (a *App) GetEvent(ctx context.Context, id int64) (*storage.Event, error) {
 	return a.storage.GetEvent(ctx, id)
 }
 
-// GetEventList returns list of events.
-func (a *App) GetEventList(ctx context.Context) ([]*storage.Event, error) {
-	return a.storage.GetEventList(ctx)
+// GetEventForDay returns list of events for day.
+func (a *App) GetEventForDay(ctx context.Context, date time.Time) ([]*storage.Event, error) {
+	return a.storage.GetEventList(ctx, date.Truncate(24*time.Hour), time.Hour*24)
+}
+
+// GetEventForWeek returns list of events for week.
+func (a *App) GetEventForWeek(ctx context.Context, date time.Time) ([]*storage.Event, error) {
+	if date.Weekday() != time.Monday {
+		return nil, ErrDateIsNotMonday
+	}
+
+	return a.storage.GetEventList(ctx, date.Truncate(24*time.Hour), time.Hour*24*7)
+}
+
+// GetEventForMonth returns list of events for month.
+func (a *App) GetEventForMonth(ctx context.Context, date time.Time) ([]*storage.Event, error) {
+	if date.Day() != 1 {
+		return nil, ErrDateIsNotFirstDay
+	}
+	dayCount := 30
+	if date.Month() == 2 {
+		dayCount = 28
+	}
+	t := time.Date(date.Year(), date.Month(), dayCount, 0, 0, 0, 0, time.UTC).AddDate(0, 1, 0)
+	if t.Day() != 1 {
+		dayCount++
+	}
+
+	return a.storage.GetEventList(ctx, date.Truncate(24*time.Hour), time.Hour*time.Duration(24*dayCount))
 }
 
 // CreateEvent creates new calendar event.
